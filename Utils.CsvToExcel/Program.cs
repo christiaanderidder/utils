@@ -10,8 +10,8 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var rootCommand = new RootCommand("CSV to Excel converter");
-        var inputDirOption = new Option<DirectoryInfo>("--inputDir", "The directory containing the CSV files to convert");
-        var outputDirOption = new Option<DirectoryInfo>("--outputDir", "The directory where the resulting Excel files will be saved");
+        var inputDirOption = new Option<DirectoryInfo>("--inputDir", "The directory containing the CSV files to convert") {IsRequired = true};
+        var outputDirOption = new Option<DirectoryInfo>("--outputDir", "The directory where the resulting Excel files will be saved") {IsRequired = true};
         rootCommand.Add(inputDirOption);
         rootCommand.Add(outputDirOption);
 
