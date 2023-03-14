@@ -17,8 +17,12 @@ public static class Program
 
         rootCommand.SetHandler((inputDir, outputDir) =>
         {
-            var files = inputDir.EnumerateFiles("*.csv");
+            var files = inputDir.EnumerateFiles("*.csv").ToList();
+            Console.WriteLine($"Found {files.Count} files for pattern *.csv in {outputDir.FullName}");
+            
             Parallel.ForEach(files, file => ProcessFile(file, outputDir));
+            
+            Console.WriteLine("Done");
         }, inputDirOption, outputDirOption);
 
         await rootCommand.InvokeAsync(args);
@@ -29,21 +33,27 @@ public static class Program
         using var reader = new StreamReader(file.FullName);
         using var csv = new CsvParser(reader, CultureInfo.InvariantCulture);
 
-        var outputPath = Path.Combine(outputDir.FullName, $"{Path.GetFileNameWithoutExtension(file.Name)}.xlsx");
+        var filename = Path.GetFileNameWithoutExtension(file.Name);
+        var outputPath = Path.Combine(outputDir.FullName, $"{filename}.xlsx");
 
         using var workbook = new XLWorkbook();
         var worksheet = workbook.Worksheets.Add("Sheet 1");
 
+        Console.WriteLine($"[{filename}] Reading CSV");
         var data = new List<string[]?>();
         while (csv.Read())
         {
             data.Add(csv.Record);
         }
 
+        Console.WriteLine($"[{filename}] Writing Excel");
         worksheet.Cell(1, 1).InsertData(data);
         worksheet.Cell(1, 1).WorksheetRow().Style.Font.Bold = true;
 
+        Console.WriteLine($"[{filename}] Saving Excel");
         using var outputFile = File.Open(outputPath, FileMode.OpenOrCreate);
         workbook.SaveAs(outputFile);
+        
+        Console.WriteLine($"[{filename}] Done");
     }
 }
